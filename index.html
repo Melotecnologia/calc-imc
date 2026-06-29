@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculadora de IMC</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+    }
+
+    .card-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .card-header h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #0f3460;
+      letter-spacing: -0.5px;
+    }
+
+    .card-header p {
+      color: #6b7280;
+      font-size: 0.9rem;
+      margin-top: 6px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 8px;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 12px 52px 12px 16px;
+      border: 2px solid #e5e7eb;
+      border-radius: 10px;
+      font-size: 1rem;
+      color: #111827;
+      outline: none;
+      transition: border-color 0.2s;
+      -moz-appearance: textfield;
+    }
+
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+    }
+
+    input[type="number"]:focus {
+      border-color: #0f3460;
+    }
+
+    .unit {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #9ca3af;
+      pointer-events: none;
+    }
+
+    button#btn-calcular {
+      width: 100%;
+      padding: 14px;
+      background: #0f3460;
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background 0.2s, transform 0.1s;
+      letter-spacing: 0.3px;
+    }
+
+    button#btn-calcular:hover {
+      background: #16213e;
+    }
+
+    button#btn-calcular:active {
+      transform: scale(0.98);
+    }
+
+    button#btn-calcular:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .result-box {
+      margin-top: 28px;
+      border-radius: 14px;
+      padding: 24px 20px;
+      text-align: center;
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-box.show {
+      display: block;
+    }
+
+    .result-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      opacity: 0.75;
+      margin-bottom: 6px;
+    }
+
+    .result-value {
+      font-size: 3rem;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .result-category {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .result-description {
+      font-size: 0.825rem;
+      opacity: 0.8;
+      line-height: 1.5;
+    }
+
+    .bg-underweight { background: #eff6ff; color: #1d4ed8; }
+    .bg-normal      { background: #f0fdf4; color: #15803d; }
+    .bg-overweight  { background: #fffbeb; color: #b45309; }
+    .bg-obese-1     { background: #fff7ed; color: #c2410c; }
+    .bg-obese-2     { background: #fef2f2; color: #b91c1c; }
+    .bg-obese-3     { background: #fdf2f8; color: #9d174d; }
+
+    .error-msg {
+      color: #dc2626;
+      font-size: 0.8rem;
+      margin-top: 6px;
+      display: none;
+    }
+
+    .error-msg.show { display: block; }
+
+    .reset-wrapper {
+      text-align: center;
+      display: none;
+      margin-top: 14px;
+    }
+
+    .reset-wrapper.show { display: block; }
+
+    .reset-btn {
+      background: transparent;
+      color: #6b7280;
+      font-size: 0.825rem;
+      font-weight: 600;
+      padding: 4px 0;
+      border: none;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .reset-btn:hover { color: #374151; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div class="card-header">
+      <h1>Calculadora de IMC</h1>
+      <p>Amilton Melo</p>
+    </div>
+
+    <div class="form-group">
+      <label for="peso">Peso</label>
+      <div class="input-wrapper">
+        <input type="number" id="peso" placeholder="Ex: 70" min="1" max="500" step="0.1" />
+        <span class="unit">kg</span>
+      </div>
+      <span class="error-msg" id="erro-peso">Informe um peso válido (1 – 500 kg).</span>
+    </div>
+
+    <div class="form-group">
+      <label for="altura">Altura</label>
+      <div class="input-wrapper">
+        <input type="number" id="altura" placeholder="Ex: 175" min="50" max="300" step="1" />
+        <span class="unit">cm</span>
+      </div>
+      <span class="error-msg" id="erro-altura">Informe uma altura válida (50 – 300 cm).</span>
+    </div>
+
+    <button id="btn-calcular" onclick="calcular()">Calcular IMC</button>
+
+    <div class="result-box" id="resultado">
+      <div class="result-label">Seu IMC</div>
+      <div class="result-value" id="imc-valor"></div>
+      <div class="result-category" id="imc-categoria"></div>
+      <div class="result-description" id="imc-descricao"></div>
+    </div>
+
+    <div class="reset-wrapper" id="reset-wrapper">
+      <button class="reset-btn" onclick="resetar()">Calcular novamente</button>
+    </div>
+  </div>
+
+  <script>
+    var categorias = [
+      {
+        max: 18.5,
+        classe: 'bg-underweight',
+        nome: 'Abaixo do peso',
+        descricao: 'Seu peso está abaixo do considerado saudável para a sua altura. Consulte um profissional de saúde.'
+      },
+      {
+        max: 25,
+        classe: 'bg-normal',
+        nome: 'Peso normal',
+        descricao: 'Seu IMC está dentro da faixa saudável. Continue mantendo hábitos equilibrados!'
+      },
+      {
+        max: 30,
+        classe: 'bg-overweight',
+        nome: 'Sobrepeso',
+        descricao: 'Seu peso está um pouco acima do ideal. Pequenas mudanças na alimentação e exercícios podem ajudar.'
+      },
+      {
+        max: 35,
+        classe: 'bg-obese-1',
+        nome: 'Obesidade Grau I',
+        descricao: 'Seu IMC indica obesidade grau I. Recomenda-se acompanhamento médico e mudanças no estilo de vida.'
+      },
+      {
+        max: 40,
+        classe: 'bg-obese-2',
+        nome: 'Obesidade Grau II',
+        descricao: 'Obesidade severa. Busque orientação médica para cuidar da sua saúde.'
+      },
+      {
+        max: Infinity,
+        classe: 'bg-obese-3',
+        nome: 'Obesidade Grau III',
+        descricao: 'Obesidade mórbida. Procure acompanhamento médico especializado com urgência.'
+      }
+    ];
+
+    function obterCategoria(imc) {
+      for (var i = 0; i < categorias.length; i++) {
+        if (imc < categorias[i].max) return categorias[i];
+      }
+    }
+
+    function validar(peso, altura) {
+      var valido = true;
+      var erroPeso   = document.getElementById('erro-peso');
+      var erroAltura = document.getElementById('erro-altura');
+
+      erroPeso.classList.remove('show');
+      erroAltura.classList.remove('show');
+
+      if (isNaN(peso) || peso < 1 || peso > 500) {
+        erroPeso.classList.add('show');
+        valido = false;
+      }
+
+      if (isNaN(altura) || altura < 50 || altura > 300) {
+        erroAltura.classList.add('show');
+        valido = false;
+      }
+
+      return valido;
+    }
+
+    function calcular() {
+      var peso   = parseFloat(document.getElementById('peso').value);
+      var altura = parseFloat(document.getElementById('altura').value);
+
+      if (!validar(peso, altura)) return;
+
+      var alturaM = altura / 100;
+      var imc     = peso / (alturaM * alturaM);
+      var cat     = obterCategoria(imc);
+
+      var resultado = document.getElementById('resultado');
+      resultado.className = 'result-box show ' + cat.classe;
+      document.getElementById('imc-valor').textContent    = imc.toFixed(1);
+      document.getElementById('imc-categoria').textContent = cat.nome;
+      document.getElementById('imc-descricao').textContent = cat.descricao;
+
+      document.getElementById('reset-wrapper').classList.add('show');
+      document.getElementById('btn-calcular').disabled = true;
+      document.getElementById('peso').disabled   = true;
+      document.getElementById('altura').disabled = true;
+    }
+
+    function resetar() {
+      document.getElementById('peso').value   = '';
+      document.getElementById('altura').value = '';
+      document.getElementById('peso').disabled   = false;
+      document.getElementById('altura').disabled = false;
+      document.getElementById('btn-calcular').disabled = false;
+      document.getElementById('resultado').className   = 'result-box';
+      document.getElementById('reset-wrapper').classList.remove('show');
+      document.getElementById('erro-peso').classList.remove('show');
+      document.getElementById('erro-altura').classList.remove('show');
+      document.getElementById('peso').focus();
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        var btn = document.getElementById('btn-calcular');
+        if (!btn.disabled) calcular();
+      }
+    });
+  </script>
+
+</body>
+</html>
+
